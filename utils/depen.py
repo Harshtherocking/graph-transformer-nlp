@@ -1,13 +1,5 @@
-import torch
+import torch 
 import stanza
-
-try: 
-    pipeline = stanza.Pipeline(lang='en', verbose= False, processors='tokenize,mwt,pos,lemma,depparse')
-    print(f"Stanza Pipeline Loaded Successfully")
-except Exception as e:
-    print(e)
-    print(f"Error in Loading Stanza Pipeline")
-    exit()
 
 # Universal Dependencies
 dependencies = {
@@ -28,22 +20,33 @@ def dep_to_idx(dep: str) -> int:
 def idx_to_dep(idx: int) -> str | None:
     return reverse_dependencies.get(idx, None)
 
-    
-def get_dep_mask(text):
-    doc = pipeline(text)
-    num_tokens = sum(len(sentence.words) for sentence in doc.sentences)
-    dep_matrix = torch.full((num_tokens, num_tokens), -1, dtype=torch.long)
-    
-    for sentence in doc.sentences:
-        for word in sentence.words:
-            if word.head > 0:  # head == 0 means the word is the root
-                head_idx = word.head - 1
-                tail_idx = word.id - 1
-                dep_idx = dep_to_idx(word.deprel.split(":")[0])
-                dep_matrix[head_idx, tail_idx] = dep_idx
-    
-    return dep_matrix
+
+class DependencyParser:
+    def __init__(self):
+        try : 
+            self.pipeline = stanza.Pipeline(lang='en', verbose= False, processors='tokenize,mwt,pos,lemma,depparse')
+        except Exception as e:
+            print(f"Error in Loading Parsing Stanza Pipeline")
+            exit()
+        
+    def get_dep_mask(self, text):
+        doc = self.pipeline(text)
+        num_tokens = sum(len(sentence.words) for sentence in doc.sentences)
+        dep_matrix = torch.full((num_tokens, num_tokens), -1, dtype=torch.long)
+        
+        for sentence in doc.sentences:
+            for word in sentence.words:
+                if word.head > 0:  # head == 0 means the word is the root
+                    head_idx = word.head - 1
+                    tail_idx = word.id - 1
+                    dep_idx = dep_to_idx(word.deprel.split(":")[0])
+                    dep_matrix[head_idx, tail_idx] = dep_idx
+        
+        return dep_matrix
+
 
 if __name__ == '__main__':
-    text = "Barack Obama was born in Hawaii."
-    print(get_dep_mask(text))
+    
+    text = ["The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog", "."]
+    text = " ".join(text)
+    print(DependencyParser().get_dep_mask(text))

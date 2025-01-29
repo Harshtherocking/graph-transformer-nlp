@@ -193,6 +193,5 @@ if __name__ == "__main__" :
     g = dgl.graph((edges["src"], edges["dst"]), num_nodes=6)
     g.ndata["emb"] = torch.randn(6, in_dim)
     g.edata["edge_emb"] = torch.randn(g.num_edges(),in_dim)
-
     encoder = GraphEncoderLayer(in_dim, out_dim, num_head, ff_dim)
     encoder(g, "emb", "edge_emb")
