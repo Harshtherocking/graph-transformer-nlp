@@ -30,7 +30,7 @@ class DependencyParser:
             exit()
         
     def get_dep_mask(self, text):
-        doc = self.pipeline(text)
+        doc = self.pipeline(text.lower())
         num_tokens = sum(len(sentence.words) for sentence in doc.sentences)
         dep_matrix = torch.full((num_tokens, num_tokens), -1, dtype=torch.long)
         
