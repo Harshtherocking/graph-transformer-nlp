@@ -3,6 +3,8 @@ import os
 import stanza
 import pickle
 
+from utils.depen import DependencyParser
+
 class Tokenizer:
     def __init__(self,tokenizer_path :str):
         self.tokenizer : dict | None = self.load_tokenizer(tokenizer_path)
@@ -21,7 +23,7 @@ class Tokenizer:
     def load_pipeline(self) -> stanza.Pipeline | None: 
         print("Loading Stanza pipeline")
         try : 
-            return stanza.Pipeline(lang='en', processors='tokenize,mwt', verbose=False)
+            return stanza.Pipeline(lang='en', processors='tokenize,mwt,pos,lemma,depparse', verbose=False)
         except:
             return None
 
@@ -30,9 +32,10 @@ class Tokenizer:
         # get raw tokens
         if self.pipeline:
             doc = self.pipeline(text.lower())
+            # print(doc)
             for sentence in doc.sentences:
-                for token in sentence.tokens:
-                    words.append(token.text)
+                for word in sentence.words:
+                    words.append(word.text)
         else:
             print(f"Pipeline not loaded")
             exit()
