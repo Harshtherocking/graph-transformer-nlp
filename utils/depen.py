@@ -1,6 +1,17 @@
 import torch 
 import stanza
 
+import os
+import sys
+from dotenv import load_dotenv
+
+load_dotenv()
+
+project_root = os.getenv('PROJECT_ROOT')
+os.chdir(project_root)
+sys.path.append(project_root)
+
+MAX_SEQ_LEN = int(os.getenv('MAX_SEQ_LEN'))
 # Universal Dependencies
 dependencies = {
     'acl': 0, 'advcl': 1, 'advmod': 2, 'amod': 3, 'appos': 4, 'aux': 5, 'case': 6, 'cc': 7, 'ccomp': 8,
@@ -30,6 +41,8 @@ class DependencyParser:
             exit()
         
     def get_dep_mask(self, text):
+        if len(text) > MAX_SEQ_LEN : 
+            text = text[:MAX_SEQ_LEN]
         doc = self.pipeline(text.lower())
         num_tokens = sum(len(sentence.words) for sentence in doc.sentences)
         dep_matrix = torch.full((num_tokens, num_tokens), -1, dtype=torch.long)

@@ -3,7 +3,16 @@ import os
 import stanza
 import pickle
 
-from utils.depen import DependencyParser
+import sys
+from dotenv import load_dotenv
+
+load_dotenv()
+
+project_root = os.getenv('PROJECT_ROOT')
+os.chdir(project_root)
+sys.path.append(project_root)
+
+MAX_SEQ_LEN = int(os.getenv('MAX_SEQ_LEN'))
 
 class Tokenizer:
     def __init__(self,tokenizer_path :str):
@@ -28,6 +37,8 @@ class Tokenizer:
             return None
 
     def tokenize(self, text : str) -> torch.Tensor:
+        if len(text) > MAX_SEQ_LEN : 
+            text = text[:MAX_SEQ_LEN]
         words = []
         # get raw tokens
         if self.pipeline:

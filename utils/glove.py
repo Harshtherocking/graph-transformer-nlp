@@ -46,5 +46,5 @@ class GloveEmbedding():
 
 
 if __name__ == "__main__" :
-    glove_file_path = os.path.join(os.getcwd(),"glove.twitter.27B", 'glove.twitter.27B.25d.txt')
+    glove_file_path = os.path.join(os.getcwd(),"glove.twitter.27B", 'glove.twitter.27B.50d.txt')
     glove = GloveEmbedding(glove_file_path)
