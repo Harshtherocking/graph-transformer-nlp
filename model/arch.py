@@ -42,12 +42,22 @@ class DepedencyEmbedding(nn.Module):
 
 
 
-class SelfAttention(nn.Module):
-    def __init__(self, hid_dim : int, rotary_emb : torch):
+# Self Dependency Attention
+class SelfDepAttention(nn.Module):
+    def __init__(self, num_features : int, hid_dim : int, rotary_emb : RotaryPositionalEmbeddings):
         super().__init__()
         self.hid_dim = hid_dim
+        self.rotary_emb = rotary_emb
+
+        self.Wq = nn.Linear(num_features, hid_dim * NUM_HEADS)
+        self.Wk = nn.Linear(num_features, hid_dim * NUM_HEADS)
+        self.Wv = nn.Linear(num_features, hid_dim * NUM_HEADS)
+
+    def attn_score (self, q, k, mask) -> torch.Tensor: 
+        pass
 
     def forward(self, x : torch.Tensor, mask : torch.Tensor) -> torch.Tensor:
+        # x : batch_size x seq_len x hid_dim
         pass
 
 
