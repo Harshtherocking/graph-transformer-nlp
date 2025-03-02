@@ -52,12 +52,33 @@ class SelfDepAttention(nn.Module):
         self.Wq = nn.Linear(num_features, hid_dim * NUM_HEADS)
         self.Wk = nn.Linear(num_features, hid_dim * NUM_HEADS)
         self.Wv = nn.Linear(num_features, hid_dim * NUM_HEADS)
+        self.Wdep = nn.Linear(num_features, hid_dim * NUM_HEADS)
 
-    def attn_score (self, q, k, mask) -> torch.Tensor: 
-        pass
+    def attn_score (self, q : torch.Tensor, k : torch.Tensor, dep : torch.Tensor) -> torch.Tensor: 
+        q = q.unsqueeze(dim=2).repeat(1, 1,  q.shape[2], 1)      
+        k = k.unsqueeze(dim=1).repeat(1, 1,  k.shape[2], 1)      
+
+        print (q.shape,k.shape)
+        
+        dep = dep.dot(q).dot(k)
+        print(dep.shape)
+        dep = dep.sum(dim=-1)
+        print(dep.shape)
+        dep = F.softmax(dep, dim=-1)
+        return dep
+
 
     def forward(self, x : torch.Tensor, mask : torch.Tensor) -> torch.Tensor:
-        # x : batch_size x seq_len x hid_dim
+        # x : batch_size x seq_len x num_features
+        # mask : batch_size x seq_len x num_features
+        print(f"forward x : {x.shape} mask : {mask.shape}")
+        q = self.Wq(x)
+        k = self.Wk(x)
+        v = self.Wv(x)
+
+        dep = self.Wdep(mask)
+        score = self.attn_score(q, k, dep)
+        print(score.shape)
         pass
 
 
@@ -90,9 +111,21 @@ class DependencyEncoder(nn.Module):
 
 
 if __name__ == "__main__":
-    dep_mask = torch.tensor([[1, 2, 3], [4, 5, -1], [9, 5, -1]])
-    in_ids = torch.tensor([1,3,34])
+    # dep_mask = torch.tensor([[1, 2, 3], [4, 5, -1], [9, 5, -1]])
+    # in_ids = torch.tensor([1,3,34])
 
-    encoder = DependencyEncoder(5)
-    encoder(in_ids, dep_mask)
+    # encoder = DependencyEncoder(5)
+    # encoder(in_ids, dep_mask)
 
+    batch = 2
+    num_features = 3
+    hid_dim = 3
+    mx = 5
+    rope = RotaryPositionalEmbeddings(dim=num_features//NUM_HEADS, max_seq_len= MAX_SEQ_LEN, base= 10000)
+
+    attn = SelfDepAttention(num_features, hid_dim, rope)
+    
+    x = torch.randn(batch, mx, num_features)
+    mask = torch.randn(batch, mx, mx, num_features)
+
+    attn(x, mask)
